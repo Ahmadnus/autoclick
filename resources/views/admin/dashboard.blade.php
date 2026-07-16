@@ -66,4 +66,36 @@
             <i class="bi bi-plus-circle ms-1"></i> إنشاء كود جديد
         </a>
     </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <div class="card stat-card p-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-whatsapp text-success ms-1"></i> إعدادات واتساب</h6>
+                <form action="{{ route('settings.update') }}" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <label for="whatsapp_number" class="stat-label mb-2 d-block">رقم واتساب الدعم</label>
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            name="whatsapp_number"
+                            id="whatsapp_number"
+                            class="form-control @error('whatsapp_number') is-invalid @enderror"
+                            value="{{ old('whatsapp_number', $whatsappNumber) }}"
+                            placeholder="مثال: 966500000000"
+                            dir="ltr"
+                            required
+                        >
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2 ms-1"></i> حفظ
+                        </button>
+                        @error('whatsapp_number')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="form-text">بالصيغة الدولية بدون علامة + أو مسافات، مثل 966500000000.</div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection

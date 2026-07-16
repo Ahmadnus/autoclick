@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LicenseController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,4 +33,6 @@ Route::middleware(['auth', 'role:Super Admin|Manager'])->group(function () {
             ->delete('/{license}', [LicenseController::class, 'destroy'])
             ->name('destroy');
     });
+
+    Route::patch('/settings', [SettingController::class, 'update'])->name('settings.update');
 });

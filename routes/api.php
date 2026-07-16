@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\LicenseApiController;
+use App\Http\Controllers\Api\SettingApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,3 +19,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('api.key')->post('/activate', [LicenseApiController::class, 'activate']);
 Route::middleware('api.key')->post('/check-status', [LicenseApiController::class, 'checkStatus']);
+
+// Public — read before a device has activated, so it can't sit behind api.key.
+Route::get('/whatsapp-config', [SettingApiController::class, 'whatsappConfig']);
