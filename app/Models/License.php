@@ -22,6 +22,7 @@ class License extends Model
     protected $casts = [
         'expires_at' => 'datetime',
         'is_active' => 'boolean',
+        'duration_months' => 'integer',
     ];
 
     /**
