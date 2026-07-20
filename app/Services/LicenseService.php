@@ -51,18 +51,59 @@ class LicenseService
      * Generates a fresh, unused activation code for the given duration and
      * customer. Not bound to any device until App::activate() is called
      * with it — device_id stays null until the Flutter app activates it.
+     *
+     * duration_months is still populated (best-effort, for legacy display
+     * and reporting) but duration_type is the authoritative field used by
+     * calculateExpiry() to compute the actual expiry date.
      */
-    public function createLicense(int $durationMonths, string $driverName, string $phoneNumber): License
-    {
+    public function createLicense(
+        string $durationType,
+        string $driverName,
+        string $phoneNumber,
+        ?int $manualDays = null,
+    ): License {
         return License::create([
             'code' => $this->generateUniqueCode(),
-            'duration_months' => $durationMonths,
+            'duration_months' => $this->legacyMonthsFor($durationType),
+            'duration_type' => $durationType,
+            'manual_days' => $durationType === License::DURATION_MANUAL ? $manualDays : null,
             'device_id' => null,
             'driver_name' => $driverName,
             'phone_number' => $phoneNumber,
             'expires_at' => null,
             'is_active' => true,
         ]);
+    }
+
+    private function legacyMonthsFor(string $durationType): int
+    {
+        return match ($durationType) {
+            License::DURATION_DAY => 0,
+            License::DURATION_MONTH_1 => 1,
+            License::DURATION_MONTH_3 => 3,
+            License::DURATION_MONTH_6 => 6,
+            License::DURATION_YEAR_1 => 12,
+            License::DURATION_MANUAL => 0,
+            default => 1,
+        };
+    }
+
+    /**
+     * Computes the expiry date from $base according to the license's
+     * duration_type. Rows created before duration_type existed have it as
+     * null, so they keep resolving from duration_months exactly as before.
+     */
+    private function calculateExpiry(License $license, \Illuminate\Support\Carbon $base): \Illuminate\Support\Carbon
+    {
+        return match ($license->duration_type) {
+            License::DURATION_DAY => $base->copy()->addDay(),
+            License::DURATION_MONTH_1 => $base->copy()->addMonth(),
+            License::DURATION_MONTH_3 => $base->copy()->addMonths(3),
+            License::DURATION_MONTH_6 => $base->copy()->addMonths(6),
+            License::DURATION_YEAR_1 => $base->copy()->addYear(),
+            License::DURATION_MANUAL => $base->copy()->addDays($license->manual_days ?? 0),
+            default => $base->copy()->addMonths($license->duration_months ?? 1),
+        };
     }
 
     public function activateAdmin(License $license): License
@@ -130,7 +171,7 @@ class LicenseService
         if (! $license->isBound()) {
             $license->update([
                 'device_id' => $deviceId,
-                'expires_at' => now()->addMonths($license->duration_months),
+                'expires_at' => $this->calculateExpiry($license, now()),
             ]);
 
             return ['ok' => true, 'license' => $license];

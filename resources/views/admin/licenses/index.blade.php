@@ -70,7 +70,7 @@
                         <tr>
                             <td class="text-muted">{{ $license->id }}</td>
                             <td class="fw-semibold"><code>{{ $license->code }}</code></td>
-                            <td>{{ $license->duration_months }} {{ $license->duration_months === 1 ? 'شهر' : 'أشهر' }}</td>
+                            <td>{{ $license->durationLabel() }}</td>
                             <td>{{ $license->driver_name ?? '—' }}</td>
                             <td class="text-end">
                                 @if ($license->phone_number)

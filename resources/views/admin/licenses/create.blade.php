@@ -41,14 +41,25 @@
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label for="duration_months" class="form-label">مدة الاشتراك</label>
-                <select id="duration_months" name="duration_months" class="form-select @error('duration_months') is-invalid @enderror" required>
-                    <option value="1" {{ old('duration_months') == 1 ? 'selected' : '' }}>شهر واحد</option>
-                    <option value="3" {{ old('duration_months') == 3 ? 'selected' : '' }}>3 أشهر</option>
+            <div class="mb-3">
+                <label for="duration_type" class="form-label">مدة الاشتراك</label>
+                <select id="duration_type" name="duration_type" class="form-select @error('duration_type') is-invalid @enderror" required
+                        onchange="document.getElementById('manual_days_group').style.display = this.value === 'manual' ? '' : 'none';">
+                    @foreach (\App\Models\License::DURATION_OPTIONS as $value => $label)
+                        <option value="{{ $value }}" {{ old('duration_type') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
                 </select>
                 <div class="form-text">سيتم إنشاء كود تفعيل عشوائي فريد؛ أرسله للعميل عبر واتساب. تبدأ مدة الاشتراك من لحظة إدخال الكود داخل التطبيق، وليس من الآن.</div>
-                @error('duration_months')
+                @error('duration_type')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-4" id="manual_days_group" style="{{ old('duration_type') === 'manual' ? '' : 'display: none;' }}">
+                <label for="manual_days" class="form-label">عدد الأيام (مدة يدوية)</label>
+                <input type="number" id="manual_days" name="manual_days" min="1" max="3650" value="{{ old('manual_days') }}"
+                       class="form-control @error('manual_days') is-invalid @enderror">
+                @error('manual_days')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
